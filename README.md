@@ -5,8 +5,8 @@ Create and update a local MLB stats database.
 
 Gets data from two main sources:
 
-  - Baseball Savant (Statcast): uses the Statcast Search tool to collect pitch-by-pitch logs for every team and player. Example [here](https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea=2018%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team=NYY&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&).
-  - Crunchtime Baseball player maps: a full table of MLB players by MLBAM ID, mapped to their IDs in other "systems". Example [here](http://crunchtimebaseball.com/master.csv).
+  - Baseball Savant (Statcast): uses the Statcast Search tool to collect pitch-by-pitch logs for every team and player. Sample download [here](https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea=2018%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team=NYY&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&).
+  - Crunchtime Baseball player maps: a full table of MLB players by MLBAM ID, mapped to their IDs in other "systems". Sample download [here](http://crunchtimebaseball.com/master.csv).
 
 Requirements
 ----------
@@ -54,3 +54,9 @@ To make more granular updates, refer to the documentation in the `src/update.py`
 > python src/update.py --year=2016 --no-statcast
 ```
 
+Useful Resources
+----------
+
+  - [Research Notebook: New Format for Statcast Data Export at Baseball Savant](https://www.fangraphs.com/tht/research-notebook-new-format-for-statcast-data-export-at-baseball-savant/)
+  - [Exploring Statcast Data from Baseball Savant](https://baseballwithr.wordpress.com/2016/08/15/exploring-statcast-data-from-baseball-savant/)
+  - [Baseball Savant Data Scraping](https://github.com/alanrkessler/savantscraper/blob/master/scraper.ipynb)
