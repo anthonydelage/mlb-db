@@ -25,7 +25,7 @@ Before using any of this tool's features, a MySQL databse and user need to be cr
 
 mysql> create database if not exists mlbdb;
 mysql> create user mlb-db;
-mysql> grant all on mlbdb.* to 'mlb-db'@'localhost' identified by 'password'
+mysql> grant all on mlbdb.* to 'mlb-db'@'localhost' identified by 'password';
 ```
 
 Usage
