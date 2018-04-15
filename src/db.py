@@ -15,6 +15,8 @@ import utils.config as config
 DB_CONFIG = config.get_config('database')
 TABLES_SQL_PATH = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), 'db/tables.sql')
+VIEWS_SQL_PATH = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), 'db/views.sql')
 
 def _run_sql(cursor, sql_path):
   """Run SQL from file in database
@@ -43,6 +45,7 @@ def main():
   cursor = db.cursor()
 
   _run_sql(cursor, TABLES_SQL_PATH)
+  _run_sql(cursor, VIEWS_SQL_PATH)
 
 if __name__ == "__main__":
   main()
