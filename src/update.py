@@ -15,12 +15,15 @@ Arguments:
 
 import os
 import argparse
+import re
 import datetime
 import pandas as pd
+import numpy as np
 import mysql.connector
 from sqlalchemy import create_engine
 
 import utils.config as config
+import utils.data_prep as data_prep
 
 from urllib.error import HTTPError
 
@@ -65,6 +68,9 @@ def update_statcast(engine, year):
       'pitcher': 'str',
       'game_pk': 'str',
       'umpire': 'str',
+      'on_3b': 'str',
+      'on_2b': 'str',
+      'on_1b': 'str',
       'pos1_person_id': 'str',
       'pos2_person_id': 'str',
       'pos3_person_id': 'str',
@@ -78,7 +84,7 @@ def update_statcast(engine, year):
     data = _get_data(uri, dtypes=dtypes)
 
     if not data.empty:
-      data = _prep_statcast(data)
+      data = data_prep.prep_statcast(data)
       _to_db_with_temp(data=data, engine=engine, table_name=DB_CONFIG['statcast_table'])
 
 
@@ -110,6 +116,7 @@ def update_players(engine):
   data = _get_data(uri, dtypes=dtypes, encoding='ISO-8859-1')
 
   if not data.empty:
+    data = data_prep.prep_players(data)
     _to_db_with_temp(data=data, engine=engine, table_name=DB_CONFIG['players_table'])
 
 
@@ -132,8 +139,9 @@ def update_players_historical(engine):
   data = _get_data(uri, dtypes=dtypes, encoding='ISO-8859-1')
 
   if not data.empty:
-    data = _prep_players_historical(data)
+    data = data_prep.prep_players_historical(data)
     _to_db_with_temp(data=data, engine=engine, table_name=DB_CONFIG['players_table'], method='ignore')
+
 
 def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
   """Get pandas DataFrame from URI
@@ -146,7 +154,7 @@ def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
     max_tries (int): A maximum number of tries to query the URI. Defaults to 10.
     encoding (string): An encoding string that determines how the URI resource is 
       intepreted. Defaults to 'utf-8'.
-    dtypes (object): An object defining the data types for any columns that need
+    dtypes (dict): A dict defining the data types for any columns that need
       to be manually specified.
   """
 
@@ -162,64 +170,6 @@ def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
       except HTTPError:
           backoff_time = min(backoff_time * 2, 60*60)
           tries += 1
-
-  return data
-
-
-def _prep_statcast(data):
-  """Prepare a Statcast DataFrame
-
-  Transforms the Statcast data to suit the `statcast` table schema. Adds
-    an `event_id` field, to be used as a unique primary key in the database.
-    Renames columns for results before April 24, 2017.
-  """
-
-  data['event_id'] = data['game_pk'].astype(str) + '.' \
-      + data['sv_id'].astype(str) + '.' \
-      + data['pitch_number'].astype(str)
-  data.drop('pos2_person_id.1', axis=1, inplace=True)
-
-  data.rename(columns={
-    'start_speed': 'release_speed',
-    'x0': 'release_pos_x',
-    'z0': 'release_pos_z',
-    'spin_rate': 'spin_rate_deprecated',
-    'break_angle': 'break_angle_deprecated',
-    'break_length': 'break_length_deprecated',
-    'inning_top_bottom': 'inning_topbot',
-    'tfs': 'tfs_deprecated',
-    'tfs_zulu': 'tfs_zulu_deprecated',
-    'catcher': 'pos2_person_id',
-    'hit_speed': 'launch_speed',
-    'hit_angle': 'launch_angle',
-    'px': 'plate_x',
-    'pz': 'plate_z'
-  }, inplace=True)
-
-  return data
-
-
-def _prep_players_historical(data):
-  """Prepare a Historical Player map DataFrame
-
-  Transforms the Historical Player data to suit the `players` table schema.
-  """
-
-  data['mlb_name'] = data['FIRSTNAME'] + ' ' + data['LASTNAME']
-
-  data.rename(columns={
-    'MLBCODE': 'mlb_id',
-    'RETROSHEETCODE': 'retro_id',
-    'PLAYERID': 'bp_id'
-  }, inplace=True)
-
-  data.drop(columns=[
-    'LASTNAME',
-    'FIRSTNAME',
-    'DAVENPORTCODE'
-  ], inplace=True)
-
-  data = data[pd.notnull(data['mlb_id'])]
 
   return data
 
