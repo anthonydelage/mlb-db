@@ -1,12 +1,402 @@
-database:
-  host: localhost
-  username: mlb-db
-  password: password
-  db: mlbdb
-  statcast_table: statcast
-  players_table: players
-
 api:
-  statcast: 'https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea={year}%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team={team}&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&'
-  players: 'http://crunchtimebaseball.com/master.csv'
-  players_historical: 'http://www.baseballprospectus.com/sortable/playerids/playerid_list.csv'
+  statcast: https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea={year}%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team={team}&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&
+  players: http://crunchtimebaseball.com/master.csv
+  players_historical: http://www.baseballprospectus.com/sortable/playerids/playerid_list.csv
+
+credentials:
+  bigquery: mlb-db-loader.json
+
+bigquery:
+  project_id: ad-fantasy-baseball
+  dataset_id: core
+  tables:
+    statcast:
+      name: statcast
+      fields:
+      - name: event_id
+        type: STRING
+        mode: NULLABLE
+      - name: pitch_type
+        type: STRING
+        mode: NULLABLE
+      - name: game_date
+        type: DATE
+        mode: NULLABLE
+      - name: release_speed
+        type: NUMERIC
+        mode: NULLABLE
+      - name: release_pos_x
+        type: NUMERIC
+        mode: NULLABLE
+      - name: release_pos_z
+        type: NUMERIC
+        mode: NULLABLE
+      - name: player_name
+        type: STRING
+        mode: NULLABLE
+      - name: batter
+        type: STRING
+        mode: NULLABLE
+      - name: pitcher
+        type: STRING
+        mode: NULLABLE
+      - name: events
+        type: STRING
+        mode: NULLABLE
+      - name: description
+        type: STRING
+        mode: NULLABLE
+      - name: spin_dir
+        type: NUMERIC
+        mode: NULLABLE
+      - name: spin_rate_deprecated
+        type: NUMERIC
+        mode: NULLABLE
+      - name: break_angle_deprecated
+        type: NUMERIC
+        mode: NULLABLE
+      - name: break_length_deprecated
+        type: NUMERIC
+        mode: NULLABLE
+      - name: zone
+        type: INTEGER
+        mode: NULLABLE
+      - name: des
+        type: STRING
+        mode: NULLABLE
+      - name: game_type
+        type: STRING
+        mode: NULLABLE
+      - name: stand
+        type: STRING
+        mode: NULLABLE
+      - name: p_throws
+        type: STRING
+        mode: NULLABLE
+      - name: home_team
+        type: STRING
+        mode: NULLABLE
+      - name: away_team
+        type: STRING
+        mode: NULLABLE
+      - name: type
+        type: STRING
+        mode: NULLABLE
+      - name: hit_location
+        type: NUMERIC
+        mode: NULLABLE
+      - name: bb_type
+        type: STRING
+        mode: NULLABLE
+      - name: balls
+        type: INTEGER
+        mode: NULLABLE
+      - name: strikes
+        type: INTEGER
+        mode: NULLABLE
+      - name: game_year
+        type: INTEGER
+        mode: NULLABLE
+      - name: pfx_x
+        type: NUMERIC
+        mode: NULLABLE
+      - name: pfx_z
+        type: NUMERIC
+        mode: NULLABLE
+      - name: plate_x
+        type: NUMERIC
+        mode: NULLABLE
+      - name: plate_z
+        type: NUMERIC
+        mode: NULLABLE
+      - name: on_3b
+        type: STRING
+        mode: NULLABLE
+      - name: on_2b
+        type: STRING
+        mode: NULLABLE
+      - name: on_1b
+        type: STRING
+        mode: NULLABLE
+      - name: outs_when_up
+        type: INTEGER
+        mode: NULLABLE
+      - name: inning
+        type: INTEGER
+        mode: NULLABLE
+      - name: inning_topbot
+        type: STRING
+        mode: NULLABLE
+      - name: hc_x
+        type: NUMERIC
+        mode: NULLABLE
+      - name: hc_y
+        type: NUMERIC
+        mode: NULLABLE
+      - name: tfs_deprecated
+        type: NUMERIC
+        mode: NULLABLE
+      - name: tfs_zulu_deprecated
+        type: NUMERIC
+        mode: NULLABLE
+      - name: umpire
+        type: STRING
+        mode: NULLABLE
+      - name: sv_id
+        type: STRING
+        mode: NULLABLE
+      - name: vx0
+        type: NUMERIC
+        mode: NULLABLE
+      - name: vy0
+        type: NUMERIC
+        mode: NULLABLE
+      - name: vz0
+        type: NUMERIC
+        mode: NULLABLE
+      - name: ax
+        type: NUMERIC
+        mode: NULLABLE
+      - name: ay
+        type: NUMERIC
+        mode: NULLABLE
+      - name: az
+        type: NUMERIC
+        mode: NULLABLE
+      - name: sz_top
+        type: NUMERIC
+        mode: NULLABLE
+      - name: sz_bot
+        type: NUMERIC
+        mode: NULLABLE
+      - name: hit_distance_sc
+        type: NUMERIC
+        mode: NULLABLE
+      - name: launch_speed
+        type: NUMERIC
+        mode: NULLABLE
+      - name: launch_angle
+        type: NUMERIC
+        mode: NULLABLE
+      - name: effective_speed
+        type: NUMERIC
+        mode: NULLABLE
+      - name: release_spin_rate
+        type: NUMERIC
+        mode: NULLABLE
+      - name: release_extension
+        type: NUMERIC
+        mode: NULLABLE
+      - name: game_pk
+        type: STRING
+        mode: NULLABLE
+      - name: pos1_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos2_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos3_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos4_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos5_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos6_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos7_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos8_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: pos9_person_id
+        type: STRING
+        mode: NULLABLE
+      - name: release_pos_y
+        type: NUMERIC
+        mode: NULLABLE
+      - name: estimated_ba_using_speedangle
+        type: NUMERIC
+        mode: NULLABLE
+      - name: estimated_woba_using_speedangle
+        type: NUMERIC
+        mode: NULLABLE
+      - name: woba_value
+        type: NUMERIC
+        mode: NULLABLE
+      - name: woba_denom
+        type: NUMERIC
+        mode: NULLABLE
+      - name: babip_value
+        type: NUMERIC
+        mode: NULLABLE
+      - name: iso_value
+        type: NUMERIC
+        mode: NULLABLE
+      - name: launch_speed_angle
+        type: NUMERIC
+        mode: NULLABLE
+      - name: at_bat_number
+        type: INTEGER
+        mode: NULLABLE
+      - name: pitch_number
+        type: INTEGER
+        mode: NULLABLE
+      - name: pitch_name
+        type: STRING
+        mode: NULLABLE
+      - name: home_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: away_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: bat_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: fld_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: post_away_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: post_home_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: post_bat_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: post_fld_score
+        type: INTEGER
+        mode: NULLABLE
+      - name: if_fielding_alignment
+        type: STRING
+        mode: NULLABLE
+      - name: of_fielding_alignment
+        type: STRING
+        mode: NULLABLE
+      - name: load_time
+        type: DATETIME
+        mode: NULLABLE
+    players:
+      name: players
+      fields:
+      - name: mlb_id
+        type: STRING
+        mode: NULLABLE
+      - name: mlb_name
+        type: STRING
+        mode: NULLABLE
+      - name: mlb_pos
+        type: STRING
+        mode: NULLABLE
+      - name: mlb_team
+        type: STRING
+        mode: NULLABLE
+      - name: mlb_team_long
+        type: STRING
+        mode: NULLABLE
+      - name: bats
+        type: STRING
+        mode: NULLABLE
+      - name: throws
+        type: STRING
+        mode: NULLABLE
+      - name: birth_year
+        type: INTEGER
+        mode: NULLABLE
+      - name: bp_id
+        type: STRING
+        mode: NULLABLE
+      - name: bref_id
+        type: STRING
+        mode: NULLABLE
+      - name: bref_name
+        type: STRING
+        mode: NULLABLE
+      - name: cbs_id
+        type: STRING
+        mode: NULLABLE
+      - name: cbs_name
+        type: STRING
+        mode: NULLABLE
+      - name: cbs_pos
+        type: STRING
+        mode: NULLABLE
+      - name: espn_id
+        type: STRING
+        mode: NULLABLE
+      - name: espn_name
+        type: STRING
+        mode: NULLABLE
+      - name: espn_pos
+        type: STRING
+        mode: NULLABLE
+      - name: fg_id
+        type: STRING
+        mode: NULLABLE
+      - name: fg_name
+        type: STRING
+        mode: NULLABLE
+      - name: fg_pos
+        type: STRING
+        mode: NULLABLE
+      - name: lahman_id
+        type: STRING
+        mode: NULLABLE
+      - name: nfbc_id
+        type: STRING
+        mode: NULLABLE
+      - name: nfbc_name
+        type: STRING
+        mode: NULLABLE
+      - name: nfbc_pos
+        type: STRING
+        mode: NULLABLE
+      - name: retro_id
+        type: STRING
+        mode: NULLABLE
+      - name: retro_name
+        type: STRING
+        mode: NULLABLE
+      - name: debut
+        type: STRING
+        mode: NULLABLE
+      - name: yahoo_id
+        type: STRING
+        mode: NULLABLE
+      - name: yahoo_name
+        type: STRING
+        mode: NULLABLE
+      - name: yahoo_pos
+        type: STRING
+        mode: NULLABLE
+      - name: mlb_depth
+        type: STRING
+        mode: NULLABLE
+      - name: ottoneu_id
+        type: STRING
+        mode: NULLABLE
+      - name: ottoneu_name
+        type: STRING
+        mode: NULLABLE
+      - name: ottoneu_pos
+        type: STRING
+        mode: NULLABLE
+      - name: rotowire_id
+        type: STRING
+        mode: NULLABLE
+      - name: rotowire_name
+        type: STRING
+        mode: NULLABLE
+      - name: rotowire_pos
+        type: STRING
+        mode: NULLABLE
+      - name: load_time
+        type: DATETIME
+        mode: NULLABLE

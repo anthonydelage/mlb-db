@@ -1,11 +1,11 @@
-.PHONY: venv, db, update
+.PHONY: venv, setup, update
 
 venv: requirements.txt
 	@virtualenv venv -p python3
 	@source venv/bin/activate && pip install -r requirements.txt	
 
-db: venv
-	@source venv/bin/activate && python src/db.py
+setup:
+	@source venv/bin/activate && python src/setup.py
 
-update: venv
-	@source venv/bin/activate && python src/update.py
+data:
+	@source venv/bin/activate && python src/data.py

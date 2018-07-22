@@ -5,9 +5,12 @@
     the `mlbdb` database.
 """
 
+import re
 import pandas as pd
 
-def prep_statcast(data):
+from datetime import datetime
+
+def prep_statcast(data, schema):
   """Prepare a Statcast DataFrame
 
   Transforms the Statcast data to suit the `statcast` table schema. Adds
@@ -16,11 +19,15 @@ def prep_statcast(data):
 
   Args:
     data (DataFrame): A DataFrame to prepare.
+    schema (list): A schema list used to properly sort the DataFrame's
+      columns.
   """
 
   data['event_id'] = data['game_pk'].astype(str) + '.' \
       + data['sv_id'].astype(str) + '.' \
       + data['pitch_number'].astype(str)
+
+  data['load_time'] = datetime.utcnow()
 
   id_columns = [
       'sv_id',
@@ -42,7 +49,7 @@ def prep_statcast(data):
       'pos9_person_id'
   ]
   data = _clean_ids(data, id_columns)
-
+  
   data.drop('pos2_person_id.1', axis=1, inplace=True)
 
   data.rename(columns={
@@ -62,17 +69,24 @@ def prep_statcast(data):
       'pz': 'plate_z'
   }, inplace=True)
 
+  sorted_columns = [field['name'] for field in schema]
+  data = data[sorted_columns]
+
   return data
 
 
-def prep_players(data):
+def prep_players(data, schema):
   """Prepare a Player map DataFrame
 
   Transforms the Player data to suit the `players` table schema.
 
   Args:
     data (DataFrame): A DataFrame to prepare.
+    schema (list): A schema list used to properly sort the DataFrame's
+      columns.
   """
+
+  data['load_time'] = datetime.utcnow()
 
   id_columns = [
       'mlb_id',
@@ -90,17 +104,24 @@ def prep_players(data):
   ]
   data = _clean_ids(data, id_columns)
 
+  sorted_columns = [field['name'] for field in schema]
+  data = data[sorted_columns]
+
   return data
 
 
-def prep_players_historical(data):
+def prep_players_historical(data, schema):
   """Prepare a Historical Player map DataFrame
 
   Transforms the Historical Player data to suit the `players` table schema.
 
   Args:
     data (DataFrame): A DataFrame to prepare.
+    schema (list): A schema list used to properly sort the DataFrame's
+      columns.
   """
+
+  data['load_time'] = datetime.utcnow()
 
   data['mlb_name'] = data['FIRSTNAME'] + ' ' + data['LASTNAME']
 
@@ -125,6 +146,10 @@ def prep_players_historical(data):
 
   data = data[pd.notnull(data['mlb_id'])]
 
+  sorted_columns = [field['name'] for field in schema]
+  data = data.reindex(columns=sorted_columns)
+  data = data[sorted_columns]
+
   return data
 
 
@@ -137,5 +162,6 @@ def _clean_ids(data, id_columns):
   """
 
   data[id_columns] = data[id_columns].replace(r'(\.\d*)', '', regex=True)
+  data[id_columns] = data[id_columns].astype(str)
 
   return data

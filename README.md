@@ -1,7 +1,7 @@
 mlb-db
 ==========
 
-Create and update a local MLB stats database.
+Loads baseball data to Google BigQuery.
 
 Gets data from three main sources:
 
@@ -13,20 +13,13 @@ Requirements
 ----------
 
   - Python 3.6+ (versions 3.5 and earlier haven't been tested)
-  - MySQL 5.7
 
 Setup
 ----------
 
-Before using any of this tool's features, a MySQL databse and user need to be created with credentials matching those in `config.yaml`. For example:
+Before using any of this tool's features, a BigQuery project and dataset need to be created with credentials matching those in `config.yaml`.
 
-```
-> mysql -u root -p
-
-mysql> create database if not exists mlbdb;
-mysql> create user mlb-db;
-mysql> grant all on mlbdb.* to 'mlb-db'@'localhost' identified by 'password';
-```
+For a quick introduction to Google BigQuery, have a look at their tutorials [here](https://cloud.google.com/bigquery/docs/tutorials).
 
 Usage
 ----------
@@ -37,22 +30,22 @@ To set up the repository's [virtual evironment](http://docs.python-guide.org/en/
 > make venv
 ```
 
-To initialize the database's tables, run:
+To initialize the BigQuery tables, run:
 
 ```
-> make db
+> make setup
 ```
 
 To run a standard database update (all events for the current year and players), run:
 
 ```
-> make update
+> make data
 ```
 
-To make more granular updates, refer to the documentation in the `src/update.py` file. For example, to update all events from 2016 without updating the `players` table, run:
+To make more granular updates, refer to the documentation in the `src/data.py` file. For example, to update all events from 2016 without updating the `players` table, run:
 
 ```
-> python src/update.py --year=2016 --no-statcast
+> python src/update.py --year=2016 --no-players
 ```
 
 Useful Resources
