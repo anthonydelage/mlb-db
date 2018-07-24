@@ -7,6 +7,7 @@
 
 import re
 import pandas as pd
+import numpy as np
 
 from datetime import datetime
 
@@ -24,7 +25,7 @@ def prep_statcast(data, schema):
   """
 
   data['event_id'] = data['game_pk'].astype(str) + '.' \
-      + data['sv_id'].astype(str) + '.' \
+      + data['at_bat_number'].astype(str) + '.' \
       + data['pitch_number'].astype(str)
 
   data['load_time'] = datetime.utcnow()
@@ -161,7 +162,8 @@ def _clean_ids(data, id_columns):
     id_columns (list): A list of ID column names.
   """
 
-  data[id_columns] = data[id_columns].replace(r'(\.\d*)', '', regex=True)
-  data[id_columns] = data[id_columns].astype(str)
+  data[id_columns] = data[id_columns].replace(r'(\.\d*)', '', regex=True)\
+                                     .fillna('')\
+                                     .astype(str)
 
   return data
