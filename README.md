@@ -33,7 +33,7 @@ To set up the repository's [virtual evironment](http://docs.python-guide.org/en/
 To initialize the BigQuery tables, run:
 
 ```
-> make setup
+> make tables
 ```
 
 To run a standard database update (all events for the current year and players), run:

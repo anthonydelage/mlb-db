@@ -1,5 +1,6 @@
 ### PROJECT-SPECIFIC ###
 credentials/
+.vscode/
 
 ### PYTHON TEMPLATE ###
 # Byte-compiled / optimized / DLL files
