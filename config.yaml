@@ -2,6 +2,7 @@ api:
   statcast: https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea={year}%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team={team}&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&
   players: http://crunchtimebaseball.com/master.csv
   players_historical: http://www.baseballprospectus.com/sortable/playerids/playerid_list.csv
+  weather: https://app.box.com/shared/static/qbtz8s1yxauamohcvrrjv2ba65v5p2d3.csv
 
 credentials:
   bigquery: mlb-db-loader.json
@@ -395,6 +396,66 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: rotowire_pos
+        type: STRING
+        mode: NULLABLE
+      - name: load_time
+        type: DATETIME
+        mode: NULLABLE
+    weather:
+      name: weather
+      fields:
+      - name: game_date
+        type: DATE
+        mode: NULLABLE
+      - name: game_pk
+        type: STRING
+        mode: NULLABLE
+      - name: venue_name
+        type: STRING
+        mode: NULLABLE
+      - name: venue_id
+        type: STRING
+        mode: NULLABLE
+      - name: temperature
+        type: INTEGER
+        mode: NULLABLE
+      - name: other_weather
+        type: STRING
+        mode: NULLABLE
+      - name: wind
+        type: STRING
+        mode: NULLABLE
+      - name: attendance
+        type: INTEGER
+        mode: NULLABLE
+      - name: start_time
+        type: STRING
+        mode: NULLABLE
+      - name: elapsed_time
+        type: STRING
+        mode: NULLABLE
+      - name: game_id
+        type: STRING
+        mode: NULLABLE
+      - name: game_type
+        type: STRING
+        mode: NULLABLE
+      - name: home_sport_code
+        type: STRING
+        mode: NULLABLE
+      - name: official_scorer
+        type: STRING
+        mode: NULLABLE
+      - name: date
+        type: STRING
+        mode: NULLABLE
+      - name: status_ind
+        type: STRING
+        mode: NULLABLE
+      - name: home_league_id
+        type: STRING
+        mode: NULLABLE
+      - name: gameday_sw
         type: STRING
         mode: NULLABLE
       - name: load_time

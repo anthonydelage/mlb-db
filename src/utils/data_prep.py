@@ -23,11 +23,13 @@ def prep_statcast(data, schema):
         schema (list): A schema used to properly sort the DataFrame's columns.
     """
 
-    data['event_id'] = data['game_pk'].astype(str) + '.' \
-        + data['at_bat_number'].astype(str) + '.' \
-        + data['pitch_number'].astype(str)
+    output = data.copy()
 
-    data['load_time'] = datetime.utcnow()
+    output['event_id'] = output['game_pk'].astype(str) + '.' \
+        + output['at_bat_number'].astype(str) + '.' \
+        + output['pitch_number'].astype(str)
+
+    output['load_time'] = datetime.utcnow()
 
     id_columns = [
         'sv_id',
@@ -48,11 +50,11 @@ def prep_statcast(data, schema):
         'pos8_person_id',
         'pos9_person_id'
     ]
-    data = _clean_ids(data, id_columns)
+    output = _clean_ids(output, id_columns)
     
-    data.drop('pos2_person_id.1', axis=1, inplace=True)
+    output.drop('pos2_person_id.1', axis=1, inplace=True)
 
-    data.rename(columns={
+    output.rename(columns={
         'start_speed': 'release_speed',
         'x0': 'release_pos_x',
         'z0': 'release_pos_z',
@@ -70,9 +72,9 @@ def prep_statcast(data, schema):
     }, inplace=True)
 
     sorted_columns = [field['name'] for field in schema]
-    data = data[sorted_columns]
+    output = output[sorted_columns]
 
-    return data
+    return output
 
 
 def prep_players(data, schema):
@@ -85,7 +87,9 @@ def prep_players(data, schema):
       schema (list): A list used to properly sort the DataFrame's columns.
     """
 
-    data['load_time'] = datetime.utcnow()
+    output = data.copy()
+
+    output['load_time'] = datetime.utcnow()
 
     id_columns = [
         'mlb_id',
@@ -101,12 +105,12 @@ def prep_players(data, schema):
         'ottoneu_id',
         'rotowire_id'
     ]
-    data = _clean_ids(data, id_columns)
+    output = _clean_ids(output, id_columns)
 
     sorted_columns = [field['name'] for field in schema]
-    data = data[sorted_columns]
+    output = output[sorted_columns]
 
-    return data
+    return output
 
 
 def prep_players_historical(data, schema):
@@ -119,17 +123,19 @@ def prep_players_historical(data, schema):
       schema (list): A list used to properly sort the DataFrame's columns.
     """
 
-    data['load_time'] = datetime.utcnow()
+    output = data.copy()
 
-    data['mlb_name'] = data['FIRSTNAME'] + ' ' + data['LASTNAME']
+    output['load_time'] = datetime.utcnow()
 
-    data.rename(columns={
+    output['mlb_name'] = output['FIRSTNAME'] + ' ' + output['LASTNAME']
+
+    output.rename(columns={
         'MLBCODE': 'mlb_id',
         'RETROSHEETCODE': 'retro_id',
         'PLAYERID': 'bp_id'
     }, inplace=True)
 
-    data.drop(columns=[
+    output.drop(columns=[
         'LASTNAME',
         'FIRSTNAME',
         'DAVENPORTCODE'
@@ -140,13 +146,31 @@ def prep_players_historical(data, schema):
         'retro_id',
         'bp_id'
     ]
-    data = _clean_ids(data, id_columns)
+    output = _clean_ids(output, id_columns)
 
-    data = data[pd.notnull(data['mlb_id'])]
+    output = output[pd.notnull(output['mlb_id'])]
 
     sorted_columns = [field['name'] for field in schema]
-    data = data[sorted_columns]
+    output = output[sorted_columns]
 
+    return output
+
+
+def prep_weather(data, schema):
+    """Prepare a Weather DataFrame
+
+    Transforms the Weather data to suit the `weather` table schema.
+
+    Args:
+      data (DataFrame): A DataFrame to prepare.
+      schema (list): A list used to properly sort the DataFrame's columns.
+    """
+
+    data['load_time'] = datetime.utcnow()
+
+    data['attendance'] = data['attendance'].map(lambda x: _remove_thousand_sep(x))\
+                                           .astype('int64')
+    
     return data
 
 
@@ -158,8 +182,19 @@ def _clean_ids(data, id_columns):
         id_columns (list): A list of ID column names.
     """
 
-    data[id_columns] = data[id_columns].replace(r'(\.\d*)', '', regex=True)\
-                                        .fillna('')\
-                                        .astype(str)
+    output = data.copy()
 
-    return data
+    output[id_columns] = output[id_columns].replace(r'(\.\d*)', '', regex=True)\
+                                           .fillna('')\
+                                           .astype(str)
+
+    return output
+
+def _remove_thousand_sep(value):
+    """Removes thousand-separators in floats
+
+    Args:
+        value (str): A string-formatted float.
+    """
+
+    return re.sub(r'\,', '', value)

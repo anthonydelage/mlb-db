@@ -22,7 +22,12 @@ from pandas_gbq import to_gbq
 from google.cloud import bigquery
 
 from utils.config import get_config
-from utils.data_prep import prep_statcast, prep_players, prep_players_historical
+from utils.data_prep import (
+    prep_statcast,
+    prep_players,
+    prep_players_historical,
+    prep_weather
+)
 from utils.schema import schema_subset, schema_to_dtypes
 
 from urllib.error import HTTPError
@@ -38,7 +43,7 @@ def _update_statcast(client, project_id, table_id, schema, year):
     """Update statcase table in database
 
     Queries the Baseball Savant CSV API for every team in the given year,
-      then inserts the data in a BigQuery table.
+      then inserts the data in the `statcast` table.
 
     Args:
         client (BigQuery Client): A BigQuery client used to run the duplicate
@@ -95,7 +100,7 @@ def _update_players(client, project_id, table_id, schema):
     """Update players table in database
 
     Queries the Crunchtime Baseball CSV API for every player in MLB,
-        then inserts the data in the MySQL `mlbdb` database's `players` table. 
+        then inserts the data in the `players` table. 
 
     Args:
         client (BigQuery Client): A BigQuery client used to run the duplicate
@@ -133,8 +138,8 @@ def _update_players(client, project_id, table_id, schema):
 def _update_players_historical(project_id, table_id, schema):
     """Update players table in database
 
-    Queries the Crunchtime Baseball CSV API for every player in MLB,
-        then inserts the data in the MySQL `mlbdb` database's `players` table. 
+    Queries the Baseball Prospectus CSV API for every player in MLB history,
+        then inserts the data in the `players` table. 
 
     Args:
         project_id (str): A BigQuery project to write to.
@@ -149,6 +154,40 @@ def _update_players_historical(project_id, table_id, schema):
 
     if not data.empty:
         data = prep_players_historical(data, schema)
+
+        gbq_schema = schema_subset(schema, ['name', 'type'])
+        to_gbq(dataframe=data,
+               destination_table=table_id,
+               project_id=project_id,
+               if_exists='replace',
+               table_schema=gbq_schema,
+               chunksize=5000,
+               location='US',
+               private_key=SERVICE_ACCOUNT_PATH)
+
+
+def _update_weather(project_id, table_id, schema):
+    """Update weather table in database
+
+    Queries the a Box file maintained by Bill Petti for gamneday weather,
+        then inserts the data in the `weather` table. Data can be found
+        here: https://app.box.com/v/gamedayboxscoredata
+
+    Args:
+        project_id (str): A BigQuery project to write to.
+        table_id (str): A BigQuery table to write to. Should be formatted as
+            `dataset_id.table_id`.
+        schema (dict): A schema dictionary for the target table.
+    """
+
+    uri = API_CONFIG['weather']
+    dtypes = schema_to_dtypes(schema)
+    dtypes['attendance'] = 'str' # `attendance`` uses commas as a thousand-separator
+    
+    data = _get_data(uri, dtypes=dtypes)
+
+    if not data.empty:
+        data = prep_weather(data, schema)
 
         gbq_schema = schema_subset(schema, ['name', 'type'])
         to_gbq(dataframe=data,
@@ -224,10 +263,16 @@ def _remove_bq_duplicates(client, project_id, table_id, primary_key, dedupe_valu
 def main():
     """Main"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--no-statcast', help='Do not update the statcast table.', action='store_true')
-    parser.add_argument('--no-players', help='Do not update the players table.', action='store_true')
-    parser.add_argument('--historical-players', help='Update the players table with historical IDs.', action='store_true')
-    parser.add_argument('--year', help='Enter the year to update. Defaults to current year.', type=int)
+    parser.add_argument('--no-statcast',
+                        help='Do not update the statcast table.', action='store_true')
+    parser.add_argument('--no-players',
+                        help='Do not update the players table.', action='store_true')
+    parser.add_argument('--no-weather',
+                        help='Do not update the weather table.', action='store_true')
+    parser.add_argument('--historical-players',
+                        help='Update the players table with historical IDs.', action='store_true')
+    parser.add_argument('--year',
+                        help='Enter the year to update. Defaults to current year.', type=int)
     args = parser.parse_args()
 
     client = bigquery.Client.from_service_account_json(SERVICE_ACCOUNT_PATH)
@@ -253,6 +298,15 @@ def main():
 
         _update_players(client=client, project_id=project_id, table_id=table_id,
                         schema=player_schema)
+
+    if not args.no_weather:
+        print('\nUPDATING WEATHER\n')
+
+        weather_name = BQ_CONFIG['tables']['weather']['name']
+        weather_schema = BQ_CONFIG['tables']['weather']['fields']
+        table_id = dataset_id + '.' + weather_name
+
+        _update_weather(project_id=project_id, table_id=table_id, schema=weather_schema)
 
     if args.historical_players:
         print('\nUPDATING HISTORICAL PLAYERS\n')
