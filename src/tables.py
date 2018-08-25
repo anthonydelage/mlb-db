@@ -34,19 +34,19 @@ def main():
         _table = tables[table]
         table_name = _table['name']
         table_fields = _table['fields']
-
+        
         if not (table_name in table_ids):
             table_ref = dataset_ref.table(table_name)
             schema = []
 
-        for field in table_fields:
-            field = bigquery.SchemaField(name=field['name'],
-                                         field_type=field['type'],
-                                         mode=field['mode'])
-            schema.append(field)
+            for field in table_fields:
+                field = bigquery.SchemaField(name=field['name'],
+                                            field_type=field['type'],
+                                            mode=field['mode'])
+                schema.append(field)
 
-        table = bigquery.Table(table_ref, schema=schema)
-        table = client.create_table(table)
+            table = bigquery.Table(table_ref, schema=schema)
+            table = client.create_table(table)
 
 if __name__ == "__main__":
     main()
