@@ -33,7 +33,10 @@ def prep_statcast(data, schema):
 
     output['load_time'] = datetime.utcnow()
     
-    output.drop('pos2_person_id.1', axis=1, inplace=True)
+    output.drop(columns=[
+        'pitcher.1',
+        'fielder_2.1',
+    ], axis=1, inplace=True)
 
     output.rename(columns={
         'start_speed': 'release_speed',
@@ -45,7 +48,14 @@ def prep_statcast(data, schema):
         'inning_top_bottom': 'inning_topbot',
         'tfs': 'tfs_deprecated',
         'tfs_zulu': 'tfs_zulu_deprecated',
-        'catcher': 'pos2_person_id',
+        'fielder_2': 'pos2_person_id',
+        'fielder_3': 'pos3_person_id',
+        'fielder_4': 'pos4_person_id',
+        'fielder_5': 'pos5_person_id',
+        'fielder_6': 'pos6_person_id',
+        'fielder_7': 'pos7_person_id',
+        'fielder_8': 'pos8_person_id',
+        'fielder_9': 'pos9_person_id',
         'hit_speed': 'launch_speed',
         'hit_angle': 'launch_angle',
         'px': 'plate_x',
@@ -61,7 +71,6 @@ def prep_statcast(data, schema):
         'on_3b',
         'on_2b',
         'on_1b',
-        'pos1_person_id',
         'pos2_person_id',
         'pos3_person_id',
         'pos4_person_id',

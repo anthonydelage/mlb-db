@@ -191,9 +191,6 @@ bigquery:
       - name: game_pk
         type: STRING
         mode: NULLABLE
-      - name: pos1_person_id
-        type: STRING
-        mode: NULLABLE
       - name: pos2_person_id
         type: STRING
         mode: NULLABLE
