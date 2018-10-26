@@ -15,6 +15,7 @@ Arguments:
 
 import os
 import argparse
+import logging
 import re
 import pandas as pd
 from datetime import datetime
@@ -37,6 +38,11 @@ CREDENTIALS_CONFIG = get_config('credentials')
 API_CONFIG = get_config('api')
 SERVICE_ACCOUNT_PATH = os.path.join(
     './credentials', CREDENTIALS_CONFIG['bigquery'])
+
+logging.basicConfig(format='(%(asctime)s) %(levelname)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def _update_statcast(client, project_id, table_id, schema, year):
@@ -67,10 +73,9 @@ def _update_statcast(client, project_id, table_id, schema, year):
     for team in teams:
         params = {
             'team': team,
-            'year': year,
-            'time': datetime.now().strftime('%H:%M:%S')
+            'year': year
         }
-        print('UPDATING {team}, {year} AT {time}'.format(**params))
+        logger.info('UPDATING {team}, {year}'.format(**params))
 
         uri = base_uri.format(**params)
         dtypes = schema_to_dtypes(schema)
@@ -85,7 +90,7 @@ def _update_statcast(client, project_id, table_id, schema, year):
                    project_id=project_id,
                    if_exists='append',
                    table_schema=gbq_schema,
-                   chunksize=5000,
+                   chunksize=3000,
                    location='US',
                    private_key=SERVICE_ACCOUNT_PATH)
 
@@ -280,7 +285,7 @@ def main():
     dataset_id = BQ_CONFIG['dataset_id']
 
     if not args.no_statcast:
-        print('\nUPDATING STATCAST\n')
+        logger.info('UPDATING STATCAST')
 
         statcast_name = BQ_CONFIG['tables']['statcast']['name']
         statcast_schema = BQ_CONFIG['tables']['statcast']['fields']
@@ -290,7 +295,7 @@ def main():
                         schema=statcast_schema, year=args.year)
 
     if not args.no_players:
-        print('\nUPDATING PLAYERS\n')
+        logger.info('UPDATING PLAYERS')
 
         player_name = BQ_CONFIG['tables']['players']['name']
         player_schema = BQ_CONFIG['tables']['players']['fields']
@@ -300,7 +305,7 @@ def main():
                         schema=player_schema)
 
     if not args.no_weather:
-        print('\nUPDATING WEATHER\n')
+        logger.info('UPDATING WEATHER')
 
         weather_name = BQ_CONFIG['tables']['weather']['name']
         weather_schema = BQ_CONFIG['tables']['weather']['fields']
@@ -309,7 +314,7 @@ def main():
         _update_weather(project_id=project_id, table_id=table_id, schema=weather_schema)
 
     if args.historical_players:
-        print('\nUPDATING HISTORICAL PLAYERS\n')
+        logger.info('UPDATING HISTORICAL PLAYERS')
 
         player_name = BQ_CONFIG['tables']['players']['name']
         player_schema = BQ_CONFIG['tables']['players']['fields']

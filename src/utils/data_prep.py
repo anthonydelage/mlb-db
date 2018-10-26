@@ -9,7 +9,9 @@ import re
 import pandas as pd
 import numpy as np
 
+from copy import copy
 from datetime import datetime
+
 
 def prep_statcast(data, schema):
     """Prepare a Statcast DataFrame
@@ -26,10 +28,29 @@ def prep_statcast(data, schema):
     output = data.copy()
 
     output['event_id'] = output['game_pk'].astype(str) + '.' \
-        + output['at_bat_number'].astype(str) + '.' \
-        + output['pitch_number'].astype(str)
+        + output['at_bat_number'].apply(lambda x: _float_to_string(x)) + '.' \
+        + output['pitch_number'].apply(lambda x: _float_to_string(x))
 
     output['load_time'] = datetime.utcnow()
+    
+    output.drop('pos2_person_id.1', axis=1, inplace=True)
+
+    output.rename(columns={
+        'start_speed': 'release_speed',
+        'x0': 'release_pos_x',
+        'z0': 'release_pos_z',
+        'spin_rate': 'spin_rate_deprecated',
+        'break_angle': 'break_angle_deprecated',
+        'break_length': 'break_length_deprecated',
+        'inning_top_bottom': 'inning_topbot',
+        'tfs': 'tfs_deprecated',
+        'tfs_zulu': 'tfs_zulu_deprecated',
+        'catcher': 'pos2_person_id',
+        'hit_speed': 'launch_speed',
+        'hit_angle': 'launch_angle',
+        'px': 'plate_x',
+        'pz': 'plate_z'
+    }, inplace=True)
 
     id_columns = [
         'sv_id',
@@ -50,26 +71,9 @@ def prep_statcast(data, schema):
         'pos8_person_id',
         'pos9_person_id'
     ]
-    output = _clean_ids(output, id_columns)
-    
-    output.drop('pos2_person_id.1', axis=1, inplace=True)
-
-    output.rename(columns={
-        'start_speed': 'release_speed',
-        'x0': 'release_pos_x',
-        'z0': 'release_pos_z',
-        'spin_rate': 'spin_rate_deprecated',
-        'break_angle': 'break_angle_deprecated',
-        'break_length': 'break_length_deprecated',
-        'inning_top_bottom': 'inning_topbot',
-        'tfs': 'tfs_deprecated',
-        'tfs_zulu': 'tfs_zulu_deprecated',
-        'catcher': 'pos2_person_id',
-        'hit_speed': 'launch_speed',
-        'hit_angle': 'launch_angle',
-        'px': 'plate_x',
-        'pz': 'plate_z'
-    }, inplace=True)
+    output[id_columns] = output[id_columns].fillna('')
+    output[id_columns] = output[id_columns].applymap(
+        lambda x: _float_to_string(x))
 
     sorted_columns = [field['name'] for field in schema]
     output = output[sorted_columns]
@@ -105,7 +109,9 @@ def prep_players(data, schema):
         'ottoneu_id',
         'rotowire_id'
     ]
-    output = _clean_ids(output, id_columns)
+    output[id_columns] = output[id_columns].fillna('')
+    output[id_columns] = output[id_columns].applymap(
+        lambda x: _float_to_string(x))
 
     sorted_columns = [field['name'] for field in schema]
     output = output[sorted_columns]
@@ -146,7 +152,9 @@ def prep_players_historical(data, schema):
         'retro_id',
         'bp_id'
     ]
-    output = _clean_ids(output, id_columns)
+    output[id_columns] = output[id_columns].fillna('')
+    output[id_columns] = output[id_columns].applymap(
+        lambda x: _float_to_string(x))
 
     output = output[pd.notnull(output['mlb_id'])]
 
@@ -174,6 +182,33 @@ def prep_weather(data, schema):
     return data
 
 
+def _float_to_string(value):
+    """Convert floating point number to a string without decimal places
+
+    Args:
+        value (float64): A floating point number
+    """
+
+    output = copy(value)
+
+    if type(output) == 'float' and np.isnan(output):
+        return ''
+    else:
+        return re.sub(r'(\.\d*)', '', str(output))
+
+
+def _remove_thousand_sep(value):
+    """Removes thousand-separators in floats
+
+    Args:
+        value (float64): A floating point number
+    """
+
+    output = copy(value)
+
+    return re.sub(r'\,', '', str(output))
+
+
 def _clean_ids(data, id_columns):
     """Clean the ID columns in a DataFrame
 
@@ -184,17 +219,6 @@ def _clean_ids(data, id_columns):
 
     output = data.copy()
 
-    output[id_columns] = output[id_columns].replace(r'(\.\d*)', '', regex=True)\
-                                           .fillna('')\
-                                           .astype(str)
+    output[id_columns] = output[id_columns].apply(lambda x: _float_to_string(x))
 
     return output
-
-def _remove_thousand_sep(value):
-    """Removes thousand-separators in floats
-
-    Args:
-        value (str): A string-formatted float.
-    """
-
-    return re.sub(r'\,', '', value)
