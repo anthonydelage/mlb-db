@@ -9,3 +9,6 @@ tables:
 
 data:
 	@source venv/bin/activate && python src/data.py
+
+statcast-latest:
+	@source venv/bin/activate && python src/data.py --statcast --year=$(shell date +'%Y')

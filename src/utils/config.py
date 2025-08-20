@@ -5,22 +5,24 @@
 """
 
 import os
-import yaml
+
+from yaml import safe_load
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG_PATH = os.path.join(os.path.dirname(DIR_PATH), '../config.yaml')
+
 
 def get_config(key=None):
     """Get configuration
 
     Returns a dict containing the configuration requested.
-    
+
     Args:
         key (str): A key to extract from the configuration file.
     """
     with open(CONFIG_PATH, 'r') as conf:
         try:
-            config = yaml.load(conf)
+            config = safe_load(conf)
         except yaml.YAMLError as exc:
             print('Error in configuration file: {}'.format(exc))
 
@@ -28,4 +30,3 @@ def get_config(key=None):
         return config[key]
     else:
         return config
-
