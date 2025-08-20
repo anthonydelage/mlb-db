@@ -7,6 +7,39 @@ api:
 credentials:
   bigquery: mlb-db-loader.json
 
+constants:
+  teams:
+    - AZ
+    - ATL
+    - BAL
+    - BOS
+    - CHC
+    - CIN
+    - CLE
+    - COL
+    - CWS
+    - DET
+    - HOU
+    - KC
+    - LAA
+    - LAD
+    - MIA
+    - MIL
+    - MIN
+    - NYM
+    - NYY
+    - OAK
+    - PHI
+    - PIT
+    - SD
+    - SEA
+    - SF
+    - STL
+    - TB
+    - TEX
+    - TOR
+    - WSH
+
 bigquery:
   project_id: ad-fantasy-baseball
   dataset_id: core
@@ -24,13 +57,13 @@ bigquery:
         type: DATE
         mode: NULLABLE
       - name: release_speed
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: release_pos_x
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: release_pos_z
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: player_name
         type: STRING
@@ -48,16 +81,16 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: spin_dir
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: spin_rate_deprecated
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: break_angle_deprecated
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: break_length_deprecated
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: zone
         type: INTEGER
@@ -84,7 +117,7 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: hit_location
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: bb_type
         type: STRING
@@ -99,16 +132,16 @@ bigquery:
         type: INTEGER
         mode: NULLABLE
       - name: pfx_x
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: pfx_z
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: plate_x
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: plate_z
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: on_3b
         type: STRING
@@ -129,16 +162,16 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: hc_x
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: hc_y
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: tfs_deprecated
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: tfs_zulu_deprecated
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: umpire
         type: STRING
@@ -147,46 +180,46 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: vx0
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: vy0
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: vz0
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: ax
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: ay
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: az
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: sz_top
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: sz_bot
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: hit_distance_sc
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: launch_speed
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: launch_angle
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: effective_speed
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: release_spin_rate
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: release_extension
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: game_pk
         type: STRING
@@ -216,28 +249,28 @@ bigquery:
         type: STRING
         mode: NULLABLE
       - name: release_pos_y
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: estimated_ba_using_speedangle
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: estimated_woba_using_speedangle
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: woba_value
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: woba_denom
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: babip_value
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: iso_value
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: launch_speed_angle
-        type: NUMERIC
+        type: BIGNUMERIC
         mode: NULLABLE
       - name: at_bat_number
         type: INTEGER
@@ -278,6 +311,96 @@ bigquery:
       - name: of_fielding_alignment
         type: STRING
         mode: NULLABLE
+      - name: delta_home_win_exp
+        type: BIGNUMERIC
+        mode: NULLABLE
+      - name: delta_run_exp
+        type: BIGNUMERIC
+        mode: NULLABLE
+      - name: bat_speed
+        type: BIGNUMERIC
+        mode: NULLABLE
+      - name: swing_length
+        type: BIGNUMERIC
+        mode: NULLABLE
+      - name: estimated_slg_using_speedangle
+        type: NUMERIC
+        mode: nullable
+      - name: delta_pitcher_run_exp
+        type: NUMERIC
+        mode: nullable
+      - name: hyper_speed
+        type: NUMERIC
+        mode: nullable
+      - name: home_score_diff
+        type: INTEGER
+        mode: nullable
+      - name: bat_score_diff
+        type: INTEGER
+        mode: nullable
+      - name: home_win_exp
+        type: NUMERIC
+        mode: nullable
+      - name: bat_win_exp
+        type: NUMERIC
+        mode: nullable
+      - name: age_pit_legacy
+        type: INTEGER
+        mode: nullable
+      - name: age_bat_legacy
+        type: INTEGER
+        mode: nullable
+      - name: age_pit
+        type: INTEGER
+        mode: nullable
+      - name: age_bat
+        type: INTEGER
+        mode: nullable
+      - name: n_thruorder_pitcher
+        type: INTEGER
+        mode: nullable
+      - name: n_priorpa_thisgame_player_at_bat
+        type: INTEGER
+        mode: nullable
+      - name: pitcher_days_since_prev_game
+        type: INTEGER
+        mode: nullable
+      - name: batter_days_since_prev_game
+        type: INTEGER
+        mode: nullable
+      - name: pitcher_days_until_next_game
+        type: INTEGER
+        mode: nullable
+      - name: batter_days_until_next_game
+        type: INTEGER
+        mode: nullable
+      - name: api_break_z_with_gravity
+        type: NUMERIC
+        mode: nullable
+      - name: api_break_x_arm
+        type: NUMERIC
+        mode: nullable
+      - name: api_break_x_batter_in
+        type: NUMERIC
+        mode: nullable
+      - name: arm_angle
+        type: NUMERIC
+        mode: nullable
+      - name: attack_angle
+        type: NUMERIC
+        mode: nullable
+      - name: attack_direction
+        type: NUMERIC
+        mode: nullable
+      - name: swing_path_tilt
+        type: NUMERIC
+        mode: nullable
+      - name: intercept_ball_minus_batter_pos_x_inches
+        type: NUMERIC
+        mode: nullable
+      - name: intercept_ball_minus_batter_pos_y_inches
+        type: NUMERIC
+        mode: nullable
       - name: load_time
         type: DATETIME
         mode: NULLABLE

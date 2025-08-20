@@ -8,9 +8,9 @@ Example:
 
 Arguments:
   --year (int): A year to update for the `statcast` table. Defaults to the current year.
-  --no-statcast: Skips updating the `statcast` table.
-  --no-players: Skips updating the `players` table.
-  --historical-players: Enables historical player updates (backfills old IDs).
+  --statcast: Updates the `statcast` table.
+  --players: Updates the `players` table.
+  --historical-players: Updates historical players.
 """
 
 import os
@@ -18,9 +18,11 @@ import argparse
 import logging
 import re
 import pandas as pd
+
 from datetime import datetime
 from pandas_gbq import to_gbq
 from google.cloud import bigquery
+from google.oauth2.service_account import Credentials
 
 from utils.config import get_config
 from utils.data_prep import (
@@ -36,8 +38,12 @@ from urllib.error import HTTPError
 BQ_CONFIG = get_config('bigquery')
 CREDENTIALS_CONFIG = get_config('credentials')
 API_CONFIG = get_config('api')
+CONSTANTS = get_config('constants')
+
 SERVICE_ACCOUNT_PATH = os.path.join(
     './credentials', CREDENTIALS_CONFIG['bigquery'])
+BIGQUERY_CREDENTIALS = Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_PATH)
 
 logging.basicConfig(format='(%(asctime)s) %(levelname)s: %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
@@ -62,13 +68,8 @@ def _update_statcast(client, project_id, table_id, schema, year):
     """
 
     base_uri = API_CONFIG['statcast']
+    teams = CONSTANTS['teams']
     year = year or datetime.now().year
-    teams = ['ARI', 'ATL', 'BAL', 'BOS', 'CHC',
-            'CIN', 'CLE', 'COL', 'CWS', 'DET',
-            'HOU', 'KC', 'LAA', 'LAD', 'MIA',
-            'MIL', 'MIN', 'NYM', 'NYY', 'OAK',
-            'PHI', 'PIT', 'SD', 'SEA', 'SF',
-            'STL', 'TB', 'TEX', 'TOR', 'WSH']
 
     for team in teams:
         params = {
@@ -90,9 +91,8 @@ def _update_statcast(client, project_id, table_id, schema, year):
                    project_id=project_id,
                    if_exists='append',
                    table_schema=gbq_schema,
-                   chunksize=3000,
                    location='US',
-                   private_key=SERVICE_ACCOUNT_PATH)
+                   credentials=BIGQUERY_CREDENTIALS)
 
     _remove_bq_duplicates(client=client,
                           project_id=project_id,
@@ -129,10 +129,9 @@ def _update_players(client, project_id, table_id, schema):
                project_id=project_id,
                if_exists='append',
                table_schema=gbq_schema,
-               chunksize=5000,
                location='US',
-               private_key=SERVICE_ACCOUNT_PATH)
-            
+               credentials=BIGQUERY_CREDENTIALS)
+
     _remove_bq_duplicates(client=client,
                           project_id=project_id,
                           table_id=table_id,
@@ -166,9 +165,8 @@ def _update_players_historical(project_id, table_id, schema):
                project_id=project_id,
                if_exists='replace',
                table_schema=gbq_schema,
-               chunksize=5000,
                location='US',
-               private_key=SERVICE_ACCOUNT_PATH)
+               credentials=BIGQUERY_CREDENTIALS)
 
 
 def _update_weather(project_id, table_id, schema):
@@ -187,8 +185,9 @@ def _update_weather(project_id, table_id, schema):
 
     uri = API_CONFIG['weather']
     dtypes = schema_to_dtypes(schema)
-    dtypes['attendance'] = 'str' # `attendance`` uses commas as a thousand-separator
-    
+    # `attendance`` uses commas as a thousand-separator
+    dtypes['attendance'] = 'str'
+
     data = _get_data(uri, dtypes=dtypes)
 
     if not data.empty:
@@ -200,9 +199,8 @@ def _update_weather(project_id, table_id, schema):
                project_id=project_id,
                if_exists='replace',
                table_schema=gbq_schema,
-               chunksize=5000,
                location='US',
-               private_key=SERVICE_ACCOUNT_PATH)
+               credentials=BIGQUERY_CREDENTIALS)
 
 
 def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
@@ -227,7 +225,13 @@ def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
 
     while not successful and tries <= max_tries:
         try:
-            data = pd.read_csv(uri, low_memory=False, encoding=encoding, dtype=dtypes)
+            storage_options = {'User-Agent': 'Mozilla/9.0'}
+            data = pd.read_csv(uri,
+                               low_memory=False,
+                               encoding=encoding,
+                               dtype=dtypes,
+                               float_precision='round_trip',
+                               storage_options=storage_options)
             successful = True
         except HTTPError:
             backoff_time = min(backoff_time * 2, 60*60)
@@ -250,7 +254,7 @@ def _remove_bq_duplicates(client, project_id, table_id, primary_key, dedupe_valu
     """
 
     _delete_query = \
-    """
+        """
     DELETE FROM `{project_id}.{table_id}`
     WHERE STRUCT({key}, {dedupe_value}) NOT IN (
             SELECT AS STRUCT
@@ -268,12 +272,12 @@ def _remove_bq_duplicates(client, project_id, table_id, primary_key, dedupe_valu
 def main():
     """Main"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--no-statcast',
-                        help='Do not update the statcast table.', action='store_true')
-    parser.add_argument('--no-players',
-                        help='Do not update the players table.', action='store_true')
-    parser.add_argument('--no-weather',
-                        help='Do not update the weather table.', action='store_true')
+    parser.add_argument('--statcast',
+                        help='Update the statcast table.', action='store_true')
+    parser.add_argument('--players',
+                        help='Update the players table.', action='store_true')
+    parser.add_argument('--weather',
+                        help='Update the weather table.', action='store_true')
     parser.add_argument('--historical-players',
                         help='Update the players table with historical IDs.', action='store_true')
     parser.add_argument('--year',
@@ -284,7 +288,7 @@ def main():
     project_id = BQ_CONFIG['project_id']
     dataset_id = BQ_CONFIG['dataset_id']
 
-    if not args.no_statcast:
+    if args.statcast:
         logger.info('UPDATING STATCAST')
 
         statcast_name = BQ_CONFIG['tables']['statcast']['name']
@@ -292,9 +296,9 @@ def main():
         table_id = dataset_id + '.' + statcast_name
 
         _update_statcast(client=client, project_id=project_id, table_id=table_id,
-                        schema=statcast_schema, year=args.year)
+                         schema=statcast_schema, year=args.year)
 
-    if not args.no_players:
+    if args.players:
         logger.info('UPDATING PLAYERS')
 
         player_name = BQ_CONFIG['tables']['players']['name']
@@ -304,14 +308,15 @@ def main():
         _update_players(client=client, project_id=project_id, table_id=table_id,
                         schema=player_schema)
 
-    if not args.no_weather:
+    if args.weather:
         logger.info('UPDATING WEATHER')
 
         weather_name = BQ_CONFIG['tables']['weather']['name']
         weather_schema = BQ_CONFIG['tables']['weather']['fields']
         table_id = dataset_id + '.' + weather_name
 
-        _update_weather(project_id=project_id, table_id=table_id, schema=weather_schema)
+        _update_weather(project_id=project_id,
+                        table_id=table_id, schema=weather_schema)
 
     if args.historical_players:
         logger.info('UPDATING HISTORICAL PLAYERS')

@@ -14,7 +14,9 @@ from utils.config import get_config
 
 BQ_CONFIG = get_config('bigquery')
 CREDENTIALS_CONFIG = get_config('credentials')
-SERVICE_ACCOUNT_PATH = os.path.join('./credentials', CREDENTIALS_CONFIG['bigquery'])
+SERVICE_ACCOUNT_PATH = os.path.join(
+    './credentials', CREDENTIALS_CONFIG['bigquery'])
+
 
 def main():
     """Main
@@ -34,19 +36,20 @@ def main():
         _table = tables[table]
         table_name = _table['name']
         table_fields = _table['fields']
-        
+
         if not (table_name in table_ids):
             table_ref = dataset_ref.table(table_name)
             schema = []
 
             for field in table_fields:
                 field = bigquery.SchemaField(name=field['name'],
-                                            field_type=field['type'],
-                                            mode=field['mode'])
+                                             field_type=field['type'],
+                                             mode=field['mode'])
                 schema.append(field)
 
             table = bigquery.Table(table_ref, schema=schema)
             table = client.create_table(table)
+
 
 if __name__ == "__main__":
     main()

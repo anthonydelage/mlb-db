@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def prep_statcast(data, schema):
@@ -31,12 +31,7 @@ def prep_statcast(data, schema):
         + output['at_bat_number'].apply(lambda x: _float_to_string(x)) + '.' \
         + output['pitch_number'].apply(lambda x: _float_to_string(x))
 
-    output['load_time'] = datetime.utcnow()
-    
-    output.drop(columns=[
-        'pitcher.1',
-        'fielder_2.1',
-    ], axis=1, inplace=True)
+    output['load_time'] = datetime.now(timezone.utc)
 
     output.rename(columns={
         'start_speed': 'release_speed',
@@ -62,6 +57,14 @@ def prep_statcast(data, schema):
         'pz': 'plate_z'
     }, inplace=True)
 
+    # Round all decimal values to 5 decimal places
+    # then convert to string for Parquet transfer
+    numeric_columns = [field['name']
+                       for field in schema if field['type'] in ('BIGNUMERIC', 'NUMERIC')]
+    output[numeric_columns] = output[numeric_columns].apply(
+        lambda x: _df_to_numeric(x, 5))
+    output[numeric_columns] = output[numeric_columns].astype('str')
+
     id_columns = [
         'sv_id',
         'batter',
@@ -81,7 +84,7 @@ def prep_statcast(data, schema):
         'pos9_person_id'
     ]
     output[id_columns] = output[id_columns].fillna('')
-    output[id_columns] = output[id_columns].applymap(
+    output[id_columns] = output[id_columns].map(
         lambda x: _float_to_string(x))
 
     sorted_columns = [field['name'] for field in schema]
@@ -119,7 +122,7 @@ def prep_players(data, schema):
         'rotowire_id'
     ]
     output[id_columns] = output[id_columns].fillna('')
-    output[id_columns] = output[id_columns].applymap(
+    output[id_columns] = output[id_columns].map(
         lambda x: _float_to_string(x))
 
     sorted_columns = [field['name'] for field in schema]
@@ -162,7 +165,7 @@ def prep_players_historical(data, schema):
         'bp_id'
     ]
     output[id_columns] = output[id_columns].fillna('')
-    output[id_columns] = output[id_columns].applymap(
+    output[id_columns] = output[id_columns].map(
         lambda x: _float_to_string(x))
 
     output = output[pd.notnull(output['mlb_id'])]
@@ -187,8 +190,25 @@ def prep_weather(data, schema):
 
     data['attendance'] = data['attendance'].map(lambda x: _remove_thousand_sep(x))\
                                            .astype('int64')
-    
+
     return data
+
+
+def _df_to_numeric(df, decimals=None):
+    """Convert DataFrame to numeric
+
+    Args:
+        df (DataFrame): A DataFrame to convert to numeric
+        decimals (int): A number of decimals to round the numeric values to
+    """
+
+    output = pd.to_numeric(arg=df, downcast='float', dtype_backend='pyarrow',
+                           errors='raise')
+
+    if decimals is None:
+        return output
+    else:
+        return output.astype(float).round(decimals)
 
 
 def _float_to_string(value):
@@ -228,6 +248,7 @@ def _clean_ids(data, id_columns):
 
     output = data.copy()
 
-    output[id_columns] = output[id_columns].apply(lambda x: _float_to_string(x))
+    output[id_columns] = output[id_columns].apply(
+        lambda x: _float_to_string(x))
 
     return output
