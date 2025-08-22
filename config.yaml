@@ -1,8 +1,6 @@
 api:
   statcast: https://baseballsavant.mlb.com/statcast_search/csv?all=true&hfPT=&hfAB=&hfBBT=&hfPR=&hfZ=&stadium=&hfBBL=&hfNewZones=&hfGT=&hfC=&hfSea={year}%7C&hfSit=&player_type=pitcher&hfOuts=&opponent=&pitcher_throws=&batter_stands=&hfSA=&game_date_gt=&game_date_lt=&team={team}&position=&hfRO=&home_road=&hfFlag=&metric_1=&hfInn=&min_pitches=0&min_results=0&group_by=name-event&sort_col=pitches&player_event_sort=api_p_release_speed&sort_order=desc&min_abs=0&type=details&
-  players: http://crunchtimebaseball.com/master.csv
-  players_historical: http://www.baseballprospectus.com/sortable/playerids/playerid_list.csv
-  weather: https://app.box.com/shared/static/qbtz8s1yxauamohcvrrjv2ba65v5p2d3.csv
+  players: https://docs.google.com/spreadsheets/d/1JgczhD5VDQ1EiXqVG-blttZcVwbZd5_Ne_mefUGwJnk/gviz/tq?tqx=out:csv&sheet=PLAYERIDMAP"
 
 credentials:
   bigquery: mlb-db-loader.json
@@ -407,177 +405,138 @@ bigquery:
     players:
       name: players
       fields:
-      - name: mlb_id
+      - name: IDPLAYER
         type: STRING
         mode: NULLABLE
-      - name: mlb_name
+      - name: PLAYERNAME
         type: STRING
         mode: NULLABLE
-      - name: mlb_pos
+      - name: BIRTHDATE
         type: STRING
         mode: NULLABLE
-      - name: mlb_team
+      - name: FIRSTNAME
         type: STRING
         mode: NULLABLE
-      - name: mlb_team_long
+      - name: LASTNAME
         type: STRING
         mode: NULLABLE
-      - name: bats
+      - name: TEAM
         type: STRING
         mode: NULLABLE
-      - name: throws
+      - name: LG
         type: STRING
         mode: NULLABLE
-      - name: birth_year
-        type: INTEGER
-        mode: NULLABLE
-      - name: bp_id
+      - name: POS
         type: STRING
         mode: NULLABLE
-      - name: bref_id
+      - name: IDFANGRAPHS
         type: STRING
         mode: NULLABLE
-      - name: bref_name
+      - name: FANGRAPHSNAME
         type: STRING
         mode: NULLABLE
-      - name: cbs_id
+      - name: MLBID
         type: STRING
         mode: NULLABLE
-      - name: cbs_name
+      - name: MLBNAME
         type: STRING
         mode: NULLABLE
-      - name: cbs_pos
+      - name: CBSID
         type: STRING
         mode: NULLABLE
-      - name: espn_id
+      - name: CBSNAME
         type: STRING
         mode: NULLABLE
-      - name: espn_name
+      - name: RETROID
         type: STRING
         mode: NULLABLE
-      - name: espn_pos
+      - name: BREFID
         type: STRING
         mode: NULLABLE
-      - name: fg_id
+      - name: NFBCID
         type: STRING
         mode: NULLABLE
-      - name: fg_name
+      - name: NFBCNAME
         type: STRING
         mode: NULLABLE
-      - name: fg_pos
+      - name: ESPNID
         type: STRING
         mode: NULLABLE
-      - name: lahman_id
+      - name: ESPNNAME
         type: STRING
         mode: NULLABLE
-      - name: nfbc_id
+      - name: KFFLNAME
         type: STRING
         mode: NULLABLE
-      - name: nfbc_name
+      - name: DAVENPORTID
         type: STRING
         mode: NULLABLE
-      - name: nfbc_pos
+      - name: BPID
         type: STRING
         mode: NULLABLE
-      - name: retro_id
+      - name: YAHOOID
         type: STRING
         mode: NULLABLE
-      - name: retro_name
+      - name: YAHOONAME
         type: STRING
         mode: NULLABLE
-      - name: debut
+      - name: MSTRBLLNAME
         type: STRING
         mode: NULLABLE
-      - name: yahoo_id
+      - name: BATS
         type: STRING
         mode: NULLABLE
-      - name: yahoo_name
+      - name: THROWS
         type: STRING
         mode: NULLABLE
-      - name: yahoo_pos
+      - name: FANTPROSNAME
         type: STRING
         mode: NULLABLE
-      - name: mlb_depth
+      - name: LASTCOMMAFIRST
         type: STRING
         mode: NULLABLE
-      - name: ottoneu_id
+      - name: ROTOWIREID
         type: STRING
         mode: NULLABLE
-      - name: ottoneu_name
+      - name: FANDUELNAME
         type: STRING
         mode: NULLABLE
-      - name: ottoneu_pos
+      - name: FANDUELID
         type: STRING
         mode: NULLABLE
-      - name: rotowire_id
+      - name: DRAFTKINGSNAME
         type: STRING
         mode: NULLABLE
-      - name: rotowire_name
+      - name: OTTONEUID
         type: STRING
         mode: NULLABLE
-      - name: rotowire_pos
+      - name: HQID
         type: STRING
         mode: NULLABLE
-      - name: load_time
-        type: DATETIME
-        mode: NULLABLE
-    weather:
-      name: weather
-      fields:
-      - name: game_date
-        type: DATE
-        mode: NULLABLE
-      - name: game_pk
+      - name: RAZZBALLNAME
         type: STRING
         mode: NULLABLE
-      - name: venue_name
+      - name: FANTRAXID
         type: STRING
         mode: NULLABLE
-      - name: venue_id
+      - name: FANTRAXNAME
         type: STRING
         mode: NULLABLE
-      - name: temperature
-        type: INTEGER
-        mode: NULLABLE
-      - name: other_weather
+      - name: ROTOWIRENAME
         type: STRING
         mode: NULLABLE
-      - name: wind
+      - name: ALLPOS
         type: STRING
         mode: NULLABLE
-      - name: attendance
-        type: INTEGER
-        mode: NULLABLE
-      - name: start_time
+      - name: NFBCLASTFIRST
         type: STRING
         mode: NULLABLE
-      - name: elapsed_time
+      - name: ACTIVE
         type: STRING
         mode: NULLABLE
-      - name: game_id
+      - name: UNDERDOG
         type: STRING
         mode: NULLABLE
-      - name: game_type
+      - name: RAZZBALLID
         type: STRING
-        mode: NULLABLE
-      - name: home_sport_code
-        type: STRING
-        mode: NULLABLE
-      - name: official_scorer
-        type: STRING
-        mode: NULLABLE
-      - name: date
-        type: STRING
-        mode: NULLABLE
-      - name: status_ind
-        type: STRING
-        mode: NULLABLE
-      - name: home_league_id
-        type: STRING
-        mode: NULLABLE
-      - name: gameday_sw
-        type: STRING
-        mode: NULLABLE
-      - name: load_time
-        type: DATETIME
         mode: NULLABLE

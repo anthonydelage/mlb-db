@@ -10,7 +10,6 @@ Arguments:
   --year (int): A year to update for the `statcast` table. Defaults to the current year.
   --statcast: Updates the `statcast` table.
   --players: Updates the `players` table.
-  --historical-players: Updates historical players.
 """
 
 import os
@@ -27,9 +26,7 @@ from google.oauth2.service_account import Credentials
 from utils.config import get_config
 from utils.data_prep import (
     prep_statcast,
-    prep_players,
-    prep_players_historical,
-    prep_weather
+    prep_players
 )
 from utils.schema import schema_subset, schema_to_dtypes
 
@@ -139,70 +136,6 @@ def _update_players(client, project_id, table_id, schema):
                           dedupe_value='load_time')
 
 
-def _update_players_historical(project_id, table_id, schema):
-    """Update players table in database
-
-    Queries the Baseball Prospectus CSV API for every player in MLB history,
-        then inserts the data in the `players` table. 
-
-    Args:
-        project_id (str): A BigQuery project to write to.
-        table_id (str): A BigQuery table to write to. Should be formatted as
-            `dataset_id.table_id`.
-        schema (dict): A schema dictionary for the target table.
-    """
-
-    uri = API_CONFIG['players_historical']
-    dtypes = schema_to_dtypes(schema)
-    data = _get_data(uri, dtypes=dtypes, encoding='ISO-8859-1')
-
-    if not data.empty:
-        data = prep_players_historical(data, schema)
-
-        gbq_schema = schema_subset(schema, ['name', 'type'])
-        to_gbq(dataframe=data,
-               destination_table=table_id,
-               project_id=project_id,
-               if_exists='replace',
-               table_schema=gbq_schema,
-               location='US',
-               credentials=BIGQUERY_CREDENTIALS)
-
-
-def _update_weather(project_id, table_id, schema):
-    """Update weather table in database
-
-    Queries the a Box file maintained by Bill Petti for gamneday weather,
-        then inserts the data in the `weather` table. Data can be found
-        here: https://app.box.com/v/gamedayboxscoredata
-
-    Args:
-        project_id (str): A BigQuery project to write to.
-        table_id (str): A BigQuery table to write to. Should be formatted as
-            `dataset_id.table_id`.
-        schema (dict): A schema dictionary for the target table.
-    """
-
-    uri = API_CONFIG['weather']
-    dtypes = schema_to_dtypes(schema)
-    # `attendance`` uses commas as a thousand-separator
-    dtypes['attendance'] = 'str'
-
-    data = _get_data(uri, dtypes=dtypes)
-
-    if not data.empty:
-        data = prep_weather(data, schema)
-
-        gbq_schema = schema_subset(schema, ['name', 'type'])
-        to_gbq(dataframe=data,
-               destination_table=table_id,
-               project_id=project_id,
-               if_exists='replace',
-               table_schema=gbq_schema,
-               location='US',
-               credentials=BIGQUERY_CREDENTIALS)
-
-
 def _get_data(uri, max_tries=10, encoding='utf-8', dtypes={}):
     """Get pandas DataFrame from URI
 
@@ -276,10 +209,6 @@ def main():
                         help='Update the statcast table.', action='store_true')
     parser.add_argument('--players',
                         help='Update the players table.', action='store_true')
-    parser.add_argument('--weather',
-                        help='Update the weather table.', action='store_true')
-    parser.add_argument('--historical-players',
-                        help='Update the players table with historical IDs.', action='store_true')
     parser.add_argument('--year',
                         help='Enter the year to update. Defaults to current year.', type=int)
     args = parser.parse_args()
@@ -307,26 +236,6 @@ def main():
 
         _update_players(client=client, project_id=project_id, table_id=table_id,
                         schema=player_schema)
-
-    if args.weather:
-        logger.info('UPDATING WEATHER')
-
-        weather_name = BQ_CONFIG['tables']['weather']['name']
-        weather_schema = BQ_CONFIG['tables']['weather']['fields']
-        table_id = dataset_id + '.' + weather_name
-
-        _update_weather(project_id=project_id,
-                        table_id=table_id, schema=weather_schema)
-
-    if args.historical_players:
-        logger.info('UPDATING HISTORICAL PLAYERS')
-
-        player_name = BQ_CONFIG['tables']['players']['name']
-        player_schema = BQ_CONFIG['tables']['players']['fields']
-        table_id = dataset_id + '.' + player_name
-
-        _update_players_historical(project_id=project_id, table_id=table_id,
-                                   schema=player_schema)
 
 
 if __name__ == "__main__":

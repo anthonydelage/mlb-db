@@ -49,6 +49,9 @@ def main():
 
             table = bigquery.Table(table_ref, schema=schema)
             table = client.create_table(table)
+            print(f'Table {table_name} created in dataset {BQ_CONFIG["dataset_id"]}')
+        else:
+            print(f'Table {table_name} already exists in dataset {BQ_CONFIG["dataset_id"]}')
 
 
 if __name__ == "__main__":
