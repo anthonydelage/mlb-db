@@ -105,21 +105,26 @@ def prep_players(data, schema):
 
     output = data.copy()
 
-    output['load_time'] = datetime.utcnow()
+    output['load_time'] = datetime.now(timezone.utc)
 
     id_columns = [
-        'mlb_id',
-        'bp_id',
-        'bref_id',
-        'cbs_id',
-        'espn_id',
-        'fg_id',
-        'lahman_id',
-        'nfbc_id',
-        'retro_id',
-        'yahoo_id',
-        'ottoneu_id',
-        'rotowire_id'
+        'IDPLAYER',
+        'IDFANGRAPHS',
+        'MLBID',
+        'CBSID',
+        'RETROID',
+        'BREFID',
+        'NFBCID',
+        'ESPNID',
+        'DAVENPORTID',
+        'BPID',
+        'YAHOOID',
+        'ROTOWIREID',
+        'FANDUELID',
+        'OTTONEUID',
+        'HQID',
+        'FANTRAXID',
+        'RAZZBALLID'
     ]
     output[id_columns] = output[id_columns].fillna('')
     output[id_columns] = output[id_columns].map(
@@ -129,69 +134,6 @@ def prep_players(data, schema):
     output = output[sorted_columns]
 
     return output
-
-
-def prep_players_historical(data, schema):
-    """Prepare a Historical Player map DataFrame
-
-    Transforms the Historical Player data to suit the `players` table schema.
-
-    Args:
-      data (DataFrame): A DataFrame to prepare.
-      schema (list): A list used to properly sort the DataFrame's columns.
-    """
-
-    output = data.copy()
-
-    output['load_time'] = datetime.utcnow()
-
-    output['mlb_name'] = output['FIRSTNAME'] + ' ' + output['LASTNAME']
-
-    output.rename(columns={
-        'MLBCODE': 'mlb_id',
-        'RETROSHEETCODE': 'retro_id',
-        'PLAYERID': 'bp_id'
-    }, inplace=True)
-
-    output.drop(columns=[
-        'LASTNAME',
-        'FIRSTNAME',
-        'DAVENPORTCODE'
-    ], inplace=True)
-
-    id_columns = [
-        'mlb_id',
-        'retro_id',
-        'bp_id'
-    ]
-    output[id_columns] = output[id_columns].fillna('')
-    output[id_columns] = output[id_columns].map(
-        lambda x: _float_to_string(x))
-
-    output = output[pd.notnull(output['mlb_id'])]
-
-    sorted_columns = [field['name'] for field in schema]
-    output = output[sorted_columns]
-
-    return output
-
-
-def prep_weather(data, schema):
-    """Prepare a Weather DataFrame
-
-    Transforms the Weather data to suit the `weather` table schema.
-
-    Args:
-      data (DataFrame): A DataFrame to prepare.
-      schema (list): A list used to properly sort the DataFrame's columns.
-    """
-
-    data['load_time'] = datetime.utcnow()
-
-    data['attendance'] = data['attendance'].map(lambda x: _remove_thousand_sep(x))\
-                                           .astype('int64')
-
-    return data
 
 
 def _df_to_numeric(df, decimals=None):
