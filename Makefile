@@ -1,14 +1,13 @@
-.PHONY: venv, setup, update
+.PHONY: sync, setup, update
 
-venv: requirements.txt
-	@virtualenv venv -p python3
-	@source venv/bin/activate && pip install -r requirements.txt	
+sync: pyproject.toml
+	@uv sync
 
 tables:
-	@source venv/bin/activate && python src/tables.py
+	@uv run src/tables.py
 
 data:
-	@source venv/bin/activate && python src/data.py
+	@uv run src/data.py
 
 statcast-latest:
-	@source venv/bin/activate && python src/data.py --statcast --year=$(shell date +'%Y')
+	@uv run src/data.py --statcast --year=$(shell date +'%Y')
